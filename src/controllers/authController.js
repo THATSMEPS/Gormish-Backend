@@ -15,7 +15,18 @@ const config = require('../config/environment');
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 // Initialize Firebase Admin SDK
-const serviceAccount = require(path.join(__dirname, '../config/firebasecreds.json'));
+let serviceAccount;
+
+if (process.env.FIREBASE_CREDENTIALS) {
+  try {
+    serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
+  } catch (error) {
+    console.error('Invalid FIREBASE_CREDENTIALS environment variable:', error);
+    serviceAccount = require(path.join(__dirname, '../config/firebasecreds.json'));
+  }
+} else {
+  serviceAccount = require(path.join(__dirname, '../config/firebasecreds.json'));
+}
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
