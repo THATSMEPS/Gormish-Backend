@@ -11,7 +11,7 @@ const upload = multer();
 const restaurantValidation = [
   body('name').trim().notEmpty().withMessage('Name is required'),
   body('email').isEmail().withMessage('Valid email is required'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  // body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
   body('mobile').matches(/^[0-9]{10}$/).withMessage('Valid 10-digit mobile number is required'),
   body('cuisines').isString().notEmpty().withMessage('Cuisines are required'),
   body('vegNonveg').isIn(['veg', 'nonveg', 'both']).withMessage('Valid food type is required'),
