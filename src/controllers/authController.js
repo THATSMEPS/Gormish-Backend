@@ -20,6 +20,9 @@ let serviceAccount;
 if (process.env.FIREBASE_CREDENTIALS) {
   try {
     serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
+    if (serviceAccount.private_key) {
+      serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+    }
   } catch (error) {
     console.error('Invalid FIREBASE_CREDENTIALS environment variable:', error);
     serviceAccount = require(path.join(__dirname, '../config/firebasecreds.json'));
