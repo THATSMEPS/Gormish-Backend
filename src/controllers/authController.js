@@ -286,92 +286,6 @@ const getCurrentUser = async (req, res) => {
   }
 };
 
-
-// const googleSignIn = async (req, res) => {
-//   try {
-//     // Frontend sends Google ID Token in 'access_token' field (from credentialResponse.credential)
-//     const { access_token: googleIdToken } = req.body; 
-
-//     if (!googleIdToken) {
-//       return errorResponse(res, 'Google ID token is missing', 400);
-//     }
-
-//     // ✅ NEW: Verify the Google ID Token directly with google-auth-library
-//     let ticket;
-//     try {
-//         ticket = await client.verifyIdToken({
-//             idToken: googleIdToken,
-//             audience: GOOGLE_CLIENT_ID, // Specify the CLIENT_ID of the app that accesses the backend
-//         });
-//     } catch (verificationError) {
-//         console.error("Google ID Token verification failed:", verificationError.message);
-//         return errorResponse(res, 'Invalid Google ID token', 401);
-//     }
-
-//     const payload = ticket.getPayload(); // Get the payload from the verified token
-//     const googleEmail = payload.email;
-//     const googleName = payload.name || payload.given_name || googleEmail; // Fallback for name
-
-//     if (!googleEmail) {
-//         return errorResponse(res, 'Google email not found in token payload', 400);
-//     }
-
-//     // Check if user exists in our local database (Prisma) using Google email
-//     let user = await prisma.customer.findUnique({
-//       where: { email: googleEmail }
-//     });
-
-//     // If user doesn't exist in our Prisma database, create a new profile
-//     if (!user) {
-//       user = await prisma.customer.create({
-//         data: {
-//           email: googleEmail,
-//           name: googleName,
-//           phone: '', // Phone can be updated later, Google usually doesn't provide it directly
-//           // Add other default fields your 'Customer' model requires
-//         }
-//       });
-//       console.log("New customer profile created in Prisma for Google user:", user.email);
-//     } else {
-//       console.log("Existing customer profile found in Prisma for Google user:", user.email);
-//       // Optional: Update existing user's name if Google provides a newer one
-//       // await prisma.customer.update({
-//       //   where: { email: user.email },
-//       //   data: {
-//       //     name: googleName,
-//       //     // ... other fields you want to update
-//       //   }
-//       // });
-//     }
-
-//     // ✅ NEW: Generate a custom JWT (access token) for the user session
-//     // This token will represent the user's logged-in status in your application.
-//     const accessToken = jwt.sign(
-//       { userId: user.id, email: user.email, role: 'customer' }, // Payload for your JWT
-//       JWT_SECRET, // Your secret key
-//       { expiresIn: '1h' } // Token expires in 1 hour (adjust as needed)
-//     );
-
-//     // For a full authentication flow, you'd also implement a refresh token system.
-//     // For simplicity, we are only generating an access token here.
-//     // If you need refresh tokens, you'd generate and store them (e.g., in DB) and
-//     // return them to the client.
-
-//     return successResponse(res, {
-//       user, // The Prisma customer object
-//       session: { // Custom session details for frontend
-//         userId: user.id,
-//         authToken: accessToken,
-//         // refresh_token: null, // No refresh token generated in this simple setup
-//         expires_at: Math.floor(Date.now() / 1000) + (60 * 60) // Expires in 1 hour (in seconds from epoch)
-//       }
-//     }, 'Google sign-in successful', 200);
-//   } catch (error) {
-//     console.error("Error during Google sign-in process:", error);
-//     return errorResponse(res, 'Error during Google sign-in', 500, error);
-//   }
-// };
-
 const refreshToken = async (req, res) => {
   try {
     
@@ -421,7 +335,6 @@ const phoneExist = async (req, res) => {
     if (!phone) {
       return errorResponse(res, 'Phone query parameter is required', 400);
     }
-
     const existingUser = await prisma.customer.findUnique({
       where: { phone: phone }
     });

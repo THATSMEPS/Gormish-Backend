@@ -114,7 +114,7 @@ model Customer {
 model Order {
   customerNotes     String?             @map("r_notes_by_customer") @db.VarChar(255)
   distance          Decimal             @map("order_distance") @db.Decimal(10, 2)
-  status            order_status_enum   @default(preparing) @map("order_status")
+  status            order_status_enum   @default(pending) @map("order_status")
   paymentType       payment_types_enum  @map("payment_type")
   paymentStatus     payment_status_enum @default(pending) @map("payment_status")
   orderType         String              @map("order_type") @db.VarChar(255)
