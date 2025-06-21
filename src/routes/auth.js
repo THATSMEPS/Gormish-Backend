@@ -24,7 +24,7 @@ const refreshTokenValidation = [
 
 
 // Routes
-// router.post('/register', registerValidation, validate, authController.register);
+router.post('/register', registerValidation, validate, authController.register);
 // router.post('/login', loginValidation, validate, authController.login);
 router.post('/logout', authenticateToken, authController.logout);
 router.get('/me', authenticateToken, authController.getCurrentUser);
