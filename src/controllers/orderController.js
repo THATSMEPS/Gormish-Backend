@@ -14,27 +14,29 @@ const createOrder = async (req, res) => {
       address
     } = req.body;
     // Calculate items amount and GST
-   // delivery partner available or not 
-   // 1. Get the total number of delivery partners
-   const totalDeliveryPartners = await prisma.deliveryPartner.count();
-    // 2. Calculate the maximum allowed orders with a null dp_id
-    const maxNullDpOrdersAllowed = totalDeliveryPartners * 3;
-    // 3. Count current orders that have a null dp_id (not yet assigned to a partner)
-   const currentNullDpOrders = await prisma.order.count({
-      where: {
-        deliveryPartnerId: null // Assuming 'dpId' is the field in your Order model for delivery partner IDAdd commentMore actions
-      }
-    });
-    // 4. Check if a new order would exceed the allowed limit of unassigned orders
-    if ((currentNullDpOrders + 1) > maxNullDpOrdersAllowed) {
-      // If the limit would be exceeded, return a specific response to the frontend
-      // This sends a 200 OK status but indicates a business-logic failure via the body
-      return res.status(200).json({
-        success: false,
-        message: 'Our all delivery partners are busy right now! Please try again later!',
-        errorCode: 'DELIVERY_PARTNERS_BUSY' // A unique code for frontend handling
-      });
-    }
+
+    
+//    // delivery partner available or not 
+//    // 1. Get the total number of delivery partners
+//    const totalDeliveryPartners = await prisma.deliveryPartner.count();
+//     // 2. Calculate the maximum allowed orders with a null dp_id
+//     const maxNullDpOrdersAllowed = totalDeliveryPartners * 3;
+//     // 3. Count current orders that have a null dp_id (not yet assigned to a partner)
+//    const currentNullDpOrders = await prisma.order.count({
+//       where: {
+//         deliveryPartnerId: null // Assuming 'dpId' is the field in your Order model for delivery partner IDAdd commentMore actions
+//       }
+//     });
+//     // 4. Check if a new order would exceed the allowed limit of unassigned orders
+//     if ((currentNullDpOrders + 1) > maxNullDpOrdersAllowed) {
+//       // If the limit would be exceeded, return a specific response to the frontend
+//       // This sends a 200 OK status but indicates a business-logic failure via the body
+//       return res.status(200).json({
+//         success: false,
+//         message: 'Our all delivery partners are busy right now! Please try again later!',
+//         errorCode: 'DELIVERY_PARTNERS_BUSY' // A unique code for frontend handling
+//       });
+//     }
   
     let calculatedItemsTotal = 0;
     const orderItemsToCreate = [];
