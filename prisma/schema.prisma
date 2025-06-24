@@ -81,6 +81,7 @@ model DeliveryPartner {
   homeAddress           String               @map("dp_home_address") @db.VarChar(255)
   id                    String               @id @default(dbgenerated("gen_random_uuid()")) @map("dp_id") @db.Uuid
   password              String               @map("dp_password") @db.Text
+  expoPushToken         String?              @map("dp_expoPushToken") @db.Text
   reviews               OrderReview[]
   orders                Order[]
 

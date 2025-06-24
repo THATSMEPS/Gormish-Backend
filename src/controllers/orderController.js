@@ -115,19 +115,22 @@ const createOrder = async (req, res) => {
       }
     });
 
-        // Emit socket.io event for order update
-    // const fullOrder = await prisma.order.findUnique({
-    //   where: { id: order.id },
-    //   include: {
-    //     items: { include: { menuItem: true } },
-    //     restaurant: true,
-    //     customer: true,
-    //     deliveryPartner: true
-    //   }
-    // });
+    const liveDeliveryPartners = await prisma.deliveryPartner.findMany({
+      where: { is_live: true, expoPushToken: { not: null } }
+    });
 
-    // const io = req.app.get('io');
-    // io.emit('order:new', fullOrder);
+    for (const partner of liveDeliveryPartners) {
+      try {
+        await sendPushNotification(
+          partner.expoPushToken,
+          'New Order Available',
+          'A new order has been placed. Tap to view details.',
+          { orderId: order.id }
+        );
+      } catch (err) {
+        console.error(`Failed to send notification to partner ${partner.id}:`, err);
+      }
+    }
 
 
     return successResponse(res, { orderId: order.id }, 'Order created successfully', 201);
