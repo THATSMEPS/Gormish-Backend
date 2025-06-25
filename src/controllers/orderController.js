@@ -207,7 +207,17 @@ const updateOrderStatus = async (req, res) => {
       return errorResponse(res, 'Order not found', 404);
     }
 
-    
+    // --- NEW LOGIC: Prevent dispatch if delivery partner not accepted ---
+    if (status === 'dispatch') {
+      if (order.status !== 'ready') {
+        return errorResponse(res, 'Order must be in ready state to dispatch', 400);
+      }
+      if (!order.deliveryPartnerId) {
+        return errorResponse(res, 'Cannot dispatch: No delivery partner has accepted this order', 400);
+      }
+    }
+    // --- END NEW LOGIC ---
+
     const updatedOrder = await prisma.order.update({
       where: { id },
       data: { status }
@@ -228,7 +238,6 @@ const updateOrderStatus = async (req, res) => {
 
     // const io = req.app.get('io');
     // io.emit('order:update', fullOrder);
-
 
     return successResponse(res, updatedOrder, 'Order status updated successfully');
   } catch (error) {
