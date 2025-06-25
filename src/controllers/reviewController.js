@@ -109,7 +109,7 @@ const getReviewsByRestaurantId = async (req, res) => {
 
 const createReview = async (req, res) => {
   try {
-    const { orderId, reviewText, customerId } = req.body; // <-- customerId now comes from req.body
+    const { orderId, reviewText, customerId, stars } = req.body; // <-- customerId now comes from req.body
 
     // Since customerId is now from req.body, we need to validate its existence
     // and also ensure it's a valid customer in our database.
@@ -146,6 +146,7 @@ const createReview = async (req, res) => {
     const review = await prisma.orderReview.create({
       data: {
         reviewText: reviewText,
+        stars: stars !== undefined ? parseFloat(stars) : null, // Ensure stars is a number or null
         orderId: orderId,
         customerId: customerId, // Use customerId from req.body
         restaurantId: order.restaurantId,
