@@ -15,29 +15,6 @@ const createOrder = async (req, res) => {
     } = req.body;
     // Calculate items amount and GST
 
-    
-//    // delivery partner available or not 
-//    // 1. Get the total number of delivery partners
-//    const totalDeliveryPartners = await prisma.deliveryPartner.count();
-//     // 2. Calculate the maximum allowed orders with a null dp_id
-//     const maxNullDpOrdersAllowed = totalDeliveryPartners * 3;
-//     // 3. Count current orders that have a null dp_id (not yet assigned to a partner)
-//    const currentNullDpOrders = await prisma.order.count({
-//       where: {
-//         deliveryPartnerId: null // Assuming 'dpId' is the field in your Order model for delivery partner IDAdd commentMore actions
-//       }
-//     });
-//     // 4. Check if a new order would exceed the allowed limit of unassigned orders
-//     if ((currentNullDpOrders + 1) > maxNullDpOrdersAllowed) {
-//       // If the limit would be exceeded, return a specific response to the frontend
-//       // This sends a 200 OK status but indicates a business-logic failure via the body
-//       return res.status(200).json({
-//         success: false,
-//         message: 'Our all delivery partners are busy right now! Please try again later!',
-//         errorCode: 'DELIVERY_PARTNERS_BUSY' // A unique code for frontend handling
-//       });
-//     }
-  
     let calculatedItemsTotal = 0;
     const orderItemsToCreate = [];
 
@@ -49,11 +26,6 @@ const createOrder = async (req, res) => {
       if (!menuItem) {
         return errorResponse(res, `Menu item not found: ${item.menuItemId}`, 404);
       }
-
-      // Optional: Re-enable availability check if 'isAvailable' is in your MenuItem schema
-      // if (menuItem.isAvailable === false) {
-      //   return errorResponse(res, `Menu item not available: ${menuItem.name} --> ${item.menuItemId}`, 400);
-      // }
 
       const itemBasePriceForOrderItem = menuItem.price;
       const itemPriceAfterDiscount = menuItem.discountedPrice || itemBasePriceForOrderItem;
@@ -115,20 +87,16 @@ const createOrder = async (req, res) => {
       }
     });
 
-        // Emit socket.io event for order update
-    // const fullOrder = await prisma.order.findUnique({
-    //   where: { id: order.id },
-    //   include: {
-    //     items: { include: { menuItem: true } },
-    //     restaurant: true,
-    //     customer: true,
-    //     deliveryPartner: true
-    //   }
-    // });
-
-    // const io = req.app.get('io');
-    // io.emit('order:new', fullOrder);
-
+    // --- Send notification to all live delivery partners ---
+    await fetch(`${process.env.API_BASE_URL || 'http://localhost:3000/api'}/notifications/delivery-partners/sendNotificationToApp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: 'New Order Available',
+        body: 'A new order has been placed. Tap to view details.',
+        data: { orderId: order.id }
+      }),
+    });
 
     return successResponse(res, { orderId: order.id }, 'Order created successfully', 201);
 
@@ -196,14 +164,14 @@ const updateOrderStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    console.log(`Received status update request for order ${id} with status: ${status}`);
+    // console.log(`Received status update request for order ${id} with status: ${status}`);
 
     const order = await prisma.order.findUnique({
       where: { id }
     });
 
     if (!order) {
-      console.log(`Order with id ${id} not found`);
+      // console.log(`Order with id ${id} not found`);
       return errorResponse(res, 'Order not found', 404);
     }
 
@@ -223,7 +191,7 @@ const updateOrderStatus = async (req, res) => {
       data: { status }
     });
 
-    console.log(`Order ${id} status updated to: ${updatedOrder.status}`);
+    // console.log(`Order ${id} status updated to: ${updatedOrder.status}`);
 
     // Emit socket.io event for order update
     const fullOrder = await prisma.order.findUnique({

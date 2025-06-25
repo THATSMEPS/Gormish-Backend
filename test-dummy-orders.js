@@ -84,7 +84,7 @@ async function main() {
     });
   }
 
-  console.log('Dummy orders inserted!');
+  // console.log('Dummy orders inserted!');
 }
 
 main().catch(e => {
