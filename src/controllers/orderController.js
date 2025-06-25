@@ -349,7 +349,6 @@ const getRestaurantOrderHistory = async (req, res) => {
         status: { in: ['dispatch', 'rejected', 'delivered'] } // History orders now includes 'delivered'
       },
       include: {
-        items: { include: { menuItem: true } },
         customer: true,
         deliveryPartner: true
       },
