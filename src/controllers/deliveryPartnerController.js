@@ -275,20 +275,20 @@ const acceptOrder = async (req, res) => {
     // All three pieces of data are now expected in the request body
     const { dpId, orderId, dpAcceptedAt } = req.body; 
 
-    console.log(`Received request for DP ${dpId} to accept order ${orderId} at: ${dpAcceptedAt}`);
+    // console.log(`Received request for DP ${dpId} to accept order ${orderId} at: ${dpAcceptedAt}`);
 
     // --- Input Validation ---
     if (!dpId) {
-      console.log('Error: Delivery Partner ID (dpId) is missing in request body.');
+      // console.log('Error: Delivery Partner ID (dpId) is missing in request body.');
       // Make sure errorResponse function is accessible (imported or global)
       return errorResponse(res, 'Delivery Partner ID is required in request body', 400);
     }
     if (!orderId) {
-      console.log('Error: Order ID is missing in request body.');
+      // console.log('Error: Order ID is missing in request body.');
       return errorResponse(res, 'Order ID is required in request body', 400);
     }
     if (!dpAcceptedAt) {
-      console.log('Error: Acceptance timestamp (dpAcceptedAt) is missing in request body.');
+      // console.log('Error: Acceptance timestamp (dpAcceptedAt) is missing in request body.');
       return errorResponse(res, 'Acceptance timestamp (dpAcceptedAt) is required in request body', 400);
     }
 
@@ -298,7 +298,7 @@ const acceptOrder = async (req, res) => {
     });
 
     if (!deliveryPartner) {
-      console.log(`Delivery Partner with ID ${dpId} not found.`);
+      // console.log(`Delivery Partner with ID ${dpId} not found.`);
       return errorResponse(res, 'Delivery Partner not found', 404);
     }
 
@@ -308,7 +308,7 @@ const acceptOrder = async (req, res) => {
     });
 
     if (!order) {
-      console.log(`Order with ID ${orderId} not found.`);
+      // console.log(`Order with ID ${orderId} not found.`);
       return errorResponse(res, 'Order not found', 404);
     }
 
@@ -337,7 +337,7 @@ const acceptOrder = async (req, res) => {
       }
     });
 
-    console.log(`Order ${orderId} successfully accepted by DP ${dpId}. Status updated to: ${updatedOrder.status}`);
+    // console.log(`Order ${orderId} successfully accepted by DP ${dpId}. Status updated to: ${updatedOrder.status}`);
 
     return successResponse(res, updatedOrder, 'Order accepted by delivery partner successfully');
   } catch (error) {
@@ -350,11 +350,11 @@ const completeOrder = async (req, res) => {
   try {
     const { dpId, orderId, dpDeliveredAt, status } = req.body;
 
-    console.log(`Received request to complete order ${orderId} by DP ${dpId} at: ${dpDeliveredAt}`);
+    // console.log(`Received request to complete order ${orderId} by DP ${dpId} at: ${dpDeliveredAt}`);
 
     // --- Input Validation ---
     if (!dpId || !orderId || !dpDeliveredAt || status !== 'delivered') {
-      console.log('Error: Missing or invalid required fields for completing order.');
+      // console.log('Error: Missing or invalid required fields for completing order.');
       return errorResponse(res, 'Missing or invalid required fields (dpId, orderId, dpDeliveredAt, status: "delivered")', 400);
     }
 
@@ -364,7 +364,7 @@ const completeOrder = async (req, res) => {
     });
 
     if (!deliveryPartner) {
-      console.log(`Delivery Partner with ID ${dpId} not found.`);
+      // console.log(`Delivery Partner with ID ${dpId} not found.`);
       return errorResponse(res, 'Delivery Partner not found', 404);
     }
 
@@ -374,13 +374,13 @@ const completeOrder = async (req, res) => {
     });
 
     if (!order) {
-      console.log(`Order with ID ${orderId} not found.`);
+      // console.log(`Order with ID ${orderId} not found.`);
       return errorResponse(res, 'Order not found', 404);
     }
 
     // Optional: Add a check if the order is actually assigned to this dpId
     if (order.deliveryPartnerId !== dpId) {
-        console.log(`Order ${orderId} is not assigned to Delivery Partner ${dpId}.`);
+        // console.log(`Order ${orderId} is not assigned to Delivery Partner ${dpId}.`);
         return errorResponse(res, 'Order not assigned to this Delivery Partner', 403);
     }
 
@@ -393,7 +393,7 @@ const completeOrder = async (req, res) => {
       }
     });
 
-    console.log(`Order ${orderId} successfully completed by DP ${dpId}. Final Status: ${updatedOrder.status}`);
+    // console.log(`Order ${orderId} successfully completed by DP ${dpId}. Final Status: ${updatedOrder.status}`);
 
     // // Emit socket.io event for real-time updates
     // const io = req.app.get('io'); // Assuming socket.io is set up on req.app
@@ -410,10 +410,10 @@ const getDeliveryPartnerOrders = async (req, res) => {
   try {
     const { dpId } = req.params; 
 
-    console.log(`Received GET request to fetch orders for Delivery Partner ID: ${dpId}`);
+    // console.log(`Received GET request to fetch orders for Delivery Partner ID: ${dpId}`);
 
     if (!dpId) {
-      console.log('Error: Missing dpId in request parameters for fetching orders.');
+      // console.log('Error: Missing dpId in request parameters for fetching orders.');
       return errorResponse(res, 'Missing Delivery Partner ID', 400);
     }
 
@@ -422,7 +422,7 @@ const getDeliveryPartnerOrders = async (req, res) => {
     });
 
     if (!deliveryPartner) {
-      console.log(`Delivery Partner with ID ${dpId} not found.`);
+      // console.log(`Delivery Partner with ID ${dpId} not found.`);
       return errorResponse(res, 'Delivery Partner not found', 404);
     }
 
@@ -455,7 +455,7 @@ const getDeliveryPartnerOrders = async (req, res) => {
       restaurant: undefined // Remove the nested restaurant object
     }));
 
-    console.log(`Fetched ${transformedOrders.length} orders for DP ID ${dpId}.`);
+    // console.log(`Fetched ${transformedOrders.length} orders for DP ID ${dpId}.`);
 
     return successResponse(res, transformedOrders, 'Orders fetched successfully for Delivery Partner');
     // --- END CHANGES ---
@@ -469,7 +469,7 @@ const getDeliveryPartnerOrders = async (req, res) => {
 // Get the current active order for a delivery partner
 const getDeliveryPartnerCurrentOrder = async (req, res) => {
   try {
-    console.log('find request for current order by delivery partner:', req.params);
+    // console.log('find request for current order by delivery partner:', req.params);
     const { dpId } = req.params;
     const currentOrder = await prisma.order.findFirst({
       where: {

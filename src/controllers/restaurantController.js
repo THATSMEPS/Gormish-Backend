@@ -269,7 +269,7 @@ const logoutRestaurant = async (req, res) => {
 
 const getCurrentRestaurant = async (req, res) => {
   try {
-    console.log('req.user.id:', req.user.id);  // Added logging for debugging
+    // console.log('req.user.id:', req.user.id);  // Added logging for debugging
 
     const restaurant = await prisma.restaurant.findUnique({
       where: { id: req.user.id },
