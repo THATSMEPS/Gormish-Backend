@@ -469,12 +469,13 @@ const getDeliveryPartnerOrders = async (req, res) => {
 // Get the current active order for a delivery partner
 const getDeliveryPartnerCurrentOrder = async (req, res) => {
   try {
+    console.log('find request for current order by delivery partner:', req.params);
     const { dpId } = req.params;
-    const currentOrder = await prisma.order.findMany({
+    const currentOrder = await prisma.order.findFirst({
       where: {
-        deliveryPartnerId: Number(dpId),
-        dp_accepted_at: { not: null },
-        dp_delivered_at: null
+        deliveryPartnerId: dpId, // keep as string (UUID)
+        dpAcceptedAt: { not: null },
+        dpDeliveredAt: null
       },
       include: {
         items: {
@@ -487,8 +488,8 @@ const getDeliveryPartnerCurrentOrder = async (req, res) => {
       }
     });
     if (!currentOrder) {
-      return res.status(404).json({
-        success: false,
+      return res.status(200).json({
+        success: true,
         message: 'No current order found for this delivery partner.'
       });
     }
