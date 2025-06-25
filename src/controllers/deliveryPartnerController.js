@@ -466,6 +466,46 @@ const getDeliveryPartnerOrders = async (req, res) => {
   }
 };
 
+// Get the current active order for a delivery partner
+const getDeliveryPartnerCurrentOrder = async (req, res) => {
+  try {
+    const { dpId } = req.params;
+    const currentOrder = await prisma.order.findMany({
+      where: {
+        deliveryPartnerId: Number(dpId),
+        dp_accepted_at: { not: null },
+        dp_delivered_at: null
+      },
+      include: {
+        items: {
+          include: {
+            menuItem: true
+          }
+        },
+        restaurant: true,
+        customer: true
+      }
+    });
+    if (!currentOrder) {
+      return res.status(404).json({
+        success: false,
+        message: 'No current order found for this delivery partner.'
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      data: currentOrder
+    });
+  } catch (error) {
+    console.error('[DeliveryPartnerController] - Error fetching current order:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error fetching current order',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   createDeliveryPartner,
   updateDeliveryPartnerStatus,
@@ -476,5 +516,6 @@ module.exports = {
   acceptOrder,
   completeOrder,
   updateDeliveryPartnerIsLive,
-  getDeliveryPartnerOrders
+  getDeliveryPartnerOrders,
+  getDeliveryPartnerCurrentOrder,
 };
