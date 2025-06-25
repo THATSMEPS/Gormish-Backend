@@ -1,50 +1,60 @@
 const prisma = require('../config/prisma');
+const { sendPushNotification } = require('../services/pushNotificationService');
 
-async function storeToken (req, res) {
-  const { dpId, expoPushToken } = req.body;
-  if (!dpId || !expoPushToken) {
-    return res.status(400).json({ success: false, message: 'Missing dpId or expoPushToken' });
-  }
+// Store Expo push token for a delivery partner
+const storeExpoPushToken = async (req, res) => {
   try {
+    const { dpId, expoPushToken } = req.body;
+    if (!dpId || !expoPushToken) {
+      return res.status(400).json({ success: false, message: 'dpId and expoPushToken are required' });
+    }
     await prisma.deliveryPartner.update({
       where: { id: dpId },
-      data: { expoPushToken },
+      data: { expoPushToken }
     });
-    res.json({ success: true, message: 'Token stored successfully' });
+    return res.status(200).json({ success: true, message: 'Expo push token stored successfully' });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to store token', error: error.message });
+    console.error('[NotificationController] - Error storing Expo push token:', error);
+    return res.status(500).json({ success: false, message: 'Failed to store Expo push token', error: error.message });
   }
-}
+};
 
-async function sendNotificationToDPs(req, res) {
+// Send notification to all live delivery partners
+const sendNotificationToApp = async (req, res) => {
   try {
     const { title, body, data } = req.body;
-    const liveDPs = await prisma.deliveryPartner.findMany({
-      where: { isLive: true, expoPushToken: { not: null } }
+    const livePartners = await prisma.deliveryPartner.findMany({
+      where: { is_live: true, expoPushToken: { not: null } }
     });
 
-    if (!liveDPs.length) {
-      return res.status(404).json({ success: false, message: 'No live delivery partners with push tokens found.' });
-    }
-
-    for (const dp of liveDPs) {
-      await fetch('https://exp.host/--/api/v2/push/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: dp.expoPushToken,
-          sound: 'default',
+    for (const partner of livePartners) {
+      try {
+        await sendPushNotification(
+          partner.expoPushToken,
           title,
           body,
-          data: data || {},
-        }),
-      });
+          data
+        );
+      } catch (err) {
+        console.error(`Failed to send notification to partner ${partner.id}:`, err);
+      }
     }
 
-    res.json({ success: true, message: 'Notifications sent.' });
+    return res.status(200).json({
+      success: true,
+      message: 'Notifications sent to all live delivery partners'
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to send notifications', error: error.message });
+    console.error('[NotificationController] - Error sending notifications:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to send notifications',
+      error: error.message
+    });
   }
-}
+};
 
-module.exports = { storeToken, sendNotificationToDPs };
+module.exports = {
+  storeExpoPushToken,
+  sendNotificationToApp
+};

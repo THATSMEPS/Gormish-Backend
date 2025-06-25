@@ -1,9 +1,9 @@
 const express = require('express');
-const { storeToken, sendNotificationToDPs } = require('../controllers/notificationController');
+const notificationController = require('../controllers/notificationController');
 
 const router = express.Router();
 
-router.patch('/delivery-partners/storeToken', storeToken);
-router.post('/delivery-partners/sendNotificationToApp', sendNotificationToDPs);
+router.patch('/delivery-partners/storeToken', notificationController.storeExpoPushToken);
+router.post('/delivery-partners/sendNotificationToApp', notificationController.sendNotificationToApp);
 
 module.exports = router;
