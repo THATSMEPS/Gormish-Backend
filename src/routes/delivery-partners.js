@@ -33,6 +33,7 @@ router.patch('/acceptOrder', validate, deliveryPartnerController.acceptOrder)
 router.patch('/completeOrder', validate, deliveryPartnerController.completeOrder)
 router.patch('/islive/:id', validate, deliveryPartnerController.updateDeliveryPartnerIsLive);
 router.get('/myorders/:dpId', deliveryPartnerController.getDeliveryPartnerOrders); 
+router.get('/myorders/currentOrder/:dpId', deliveryPartnerController.getDeliveryPartnerCurrentOrder);
 
 module.exports = router;
 

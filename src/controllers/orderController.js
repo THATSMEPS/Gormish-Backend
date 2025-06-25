@@ -340,7 +340,7 @@ const getRestaurantOrderHistory = async (req, res) => {
     const orders = await prisma.order.findMany({
       where: {
         restaurantId,
-        status: { in: ['dispatch', 'rejected'] } // History orders
+        status: { in: ['dispatch', 'rejected', 'delivered'] } // History orders now includes 'delivered'
       },
       include: {
         items: { include: { menuItem: true } },
