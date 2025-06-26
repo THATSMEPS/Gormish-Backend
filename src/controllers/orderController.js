@@ -1,5 +1,6 @@
 const prisma = require('../config/prisma');
 const { successResponse, errorResponse } = require('../utils/responseHandler');
+const { sendOrderStatusNotification } = require('../services/customerNotificationService');
 
 const createOrder = async (req, res) => {
   try {
@@ -190,6 +191,13 @@ const updateOrderStatus = async (req, res) => {
       where: { id },
       data: { status }
     });
+
+    // Send push notification to customer for status update
+    // Only send notifications for the specific status changes you want
+    const notificationStatuses = ['pending', 'preparing', 'ready', 'dispatch', 'delivered'];
+    if (notificationStatuses.includes(status)) {
+      await sendOrderStatusNotification(order.customerId, id, status);
+    }
 
     // console.log(`Order ${id} status updated to: ${updatedOrder.status}`);
 
