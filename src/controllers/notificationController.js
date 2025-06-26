@@ -24,7 +24,7 @@ const sendNotificationToApp = async (req, res) => {
   try {
     const { title, body, data } = req.body;
     const livePartners = await prisma.deliveryPartner.findMany({
-      where: { is_live: true, expoPushToken: { not: null } }
+      where: { isLive: true, expoPushToken: { not: null } }
     });
 
     for (const partner of livePartners) {
