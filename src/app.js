@@ -22,7 +22,7 @@ const reviewRoutes = require('./routes/reviews');
 const customerRoutes = require('./routes/customers');
 const cuisineRoutes = require('./routes/cuisines');
 const notificationRoutes = require('./routes/notificationRoutes');
-const customerNotificationRoutes = require('./routes/customerNotifications');
+// const customerNotificationRoutes = require('./routes/customerNotifications');
 
 const app = express();
 
@@ -61,7 +61,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/cuisines', cuisineRoutes);
 app.use('/api/notifications', notificationRoutes);
-app.use('/api/customer-notifications', customerNotificationRoutes);
+// app.use('/api/customer-notifications', customerNotificationRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
