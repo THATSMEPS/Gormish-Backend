@@ -1,5 +1,6 @@
 const prisma = require('../config/prisma');
 const { sendPushNotification } = require('../services/pushNotificationService');
+const { sendOrderStatusNotification } = require('../services/customerNotificationService');
 
 // Store Expo push token for a delivery partner
 const storeExpoPushToken = async (req, res) => {
@@ -84,28 +85,8 @@ const sendNotificationToCustomer = async (req, res) => {
       });
     }
 
-    const customer = await prisma.customer.findUnique({
-      where: { id: customerId },
-      select: { expoPushToken: true }
-    });
-
-    if (!customer) {
-      return res.status(404).json({ success: false, message: 'Customer not found' });
-    }
-
-    if (!customer.expoPushToken) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Customer does not have an expo push token' 
-      });
-    }
-
-    await sendPushNotification(
-      customer.expoPushToken,
-      title,
-      body,
-      data || {}
-    );
+    // Use sendOrderStatusNotification instead of sendPushNotification
+    await sendOrderStatusNotification(customerId, data?.orderId, data?.status || title.toLowerCase());
 
     return res.status(200).json({
       success: true,
