@@ -1,6 +1,7 @@
 const prisma = require('../config/prisma');
 const { sendPushNotification } = require('../services/pushNotificationService');
 const { sendOrderStatusNotification } = require('../services/customerNotificationService');
+const { sendNewOrderNotificationToRestaurant } = require('../services/restaurantNotificationService');
 
 // Store Expo push token for a delivery partner
 const storeExpoPushToken = async (req, res) => {
@@ -156,10 +157,45 @@ const sendNotificationToAllCustomers = async (req, res) => {
   }
 };
 
+// Store Expo push token for a restaurant
+const storeRestaurantExpoPushToken = async (req, res) => {
+  try {
+    const { restaurantId, expoPushToken } = req.body;
+    if (!restaurantId || !expoPushToken) {
+      return res.status(400).json({ success: false, message: 'restaurantId and expoPushToken are required' });
+    }
+    await prisma.restaurant.update({
+      where: { id: restaurantId },
+      data: { expoPushToken }
+    });
+    return res.status(200).json({ success: true, message: 'Expo push token stored successfully for restaurant' });
+  } catch (error) {
+    console.error('[NotificationController] - Error storing restaurant Expo push token:', error);
+    return res.status(500).json({ success: false, message: 'Failed to store restaurant Expo push token', error: error.message });
+  }
+};
+
+// Send notification to a specific restaurant
+const sendNotificationToRestaurant = async (req, res) => {
+  try {
+    const { restaurantId, orderId } = req.body;
+    if (!restaurantId || !orderId) {
+      return res.status(400).json({ success: false, message: 'restaurantId and orderId are required' });
+    }
+    await sendNewOrderNotificationToRestaurant(restaurantId, orderId);
+    return res.status(200).json({ success: true, message: 'Notification sent to restaurant successfully' });
+  } catch (error) {
+    console.error('[NotificationController] - Error sending notification to restaurant:', error);
+    return res.status(500).json({ success: false, message: 'Failed to send notification to restaurant', error: error.message });
+  }
+};
+
 module.exports = {
   storeExpoPushToken,
   sendNotificationToApp,
   storeCustomerExpoPushToken,
   sendNotificationToCustomer,
-  sendNotificationToAllCustomers
+  sendNotificationToAllCustomers,
+  storeRestaurantExpoPushToken,
+  sendNotificationToRestaurant
 };

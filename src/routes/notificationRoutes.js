@@ -11,4 +11,8 @@ router.post('/delivery-partners/sendNotificationToApp', notificationController.s
 router.patch('/customers/storeToken', notificationController.storeCustomerExpoPushToken);
 router.post('/customers/sendNotification', notificationController.sendNotificationToCustomer);
 
+// Restaurant Routes
+router.patch('/restaurants/storeToken', notificationController.storeRestaurantExpoPushToken);
+router.post('/restaurants/sendNotification', notificationController.sendNotificationToRestaurant);
+
 module.exports = router;
