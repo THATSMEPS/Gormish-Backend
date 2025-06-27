@@ -1,6 +1,6 @@
 const prisma = require('../config/prisma');
 const { successResponse, errorResponse } = require('../utils/responseHandler');
-const { sendNotificationToCustomer } = require('./notificationController');
+const { sendNewOrderNotificationToRestaurant } = require('../services/restaurantNotificationService');
 
 const createOrder = async (req, res) => {
   try {
@@ -96,6 +96,16 @@ const createOrder = async (req, res) => {
         title: 'New Order Available',
         body: 'A new order has been placed. Tap to view details.',
         data: { orderId: order.id }
+      }),
+    });
+
+    // --- Send notification to the specific restaurant that received the order ---
+    await fetch(`${process.env.API_BASE_URL || 'http://localhost:3000/api'}/notifications/restaurants/sendNotification`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        restaurantId: restaurantId,
+        orderId: order.id
       }),
     });
 
@@ -196,15 +206,17 @@ const updateOrderStatus = async (req, res) => {
     // Only send notifications for the specific status changes you want
     const notificationStatuses = ['pending', 'preparing', 'ready', 'dispatch', 'delivered'];
     if (notificationStatuses.includes(status)) {
-      // Use sendNotificationToCustomer instead of sendOrderStatusNotification
-      await sendNotificationToCustomer({
-        body: {
+      // Send notification to customer via API endpoint
+      await fetch(`${process.env.API_BASE_URL || 'http://localhost:3000/api'}/notifications/customers/sendNotification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           customerId: order.customerId,
           title: status.charAt(0).toUpperCase() + status.slice(1),
           body: `Your order status is now ${status}.`,
           data: { orderId: id, status }
-        }
-      }, { status: () => ({ json: () => {} }) });
+        }),
+      });
     }
 
     // console.log(`Order ${id} status updated to: ${updatedOrder.status}`);
