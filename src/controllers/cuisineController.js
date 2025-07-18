@@ -10,8 +10,12 @@ const { successResponse, errorResponse } = require('../utils/responseHandler'); 
  */
 const getCuisines = async (req, res) => {
   try {
-    // Prisma ka use karke 'Cuisine' model se saari entries fetch karein
-    const cuisines = await prisma.cuisine.findMany();
+    // Prisma ka use karke 'Cuisine' model se saari entries fetch karein, rank ke hisaab se order karein
+    const cuisines = await prisma.cuisine.findMany({
+      orderBy: {
+        rank: 'asc',
+      },
+    });
 
     // Agar koi cuisine nahi milti hai, toh appropriate message de sakte hain
     if (cuisines.length === 0) {
