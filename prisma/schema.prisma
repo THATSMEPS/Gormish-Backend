@@ -178,9 +178,10 @@ model OrderReview {
 }
 
 model Cuisine {
- id              String      @id @default(dbgenerated("gen_random_uuid()")) @map("cuisine_id") @db.Uuid
- cuisineName     String      @unique @map("cuisine_name")
- imageUrl        String      @map("image_url")
+  id              String      @id @default(dbgenerated("gen_random_uuid()")) @map("cuisine_id") @db.Uuid
+  cuisineName     String      @unique @map("cuisine_name")
+  imageUrl        String      @map("image_url")
+  rank           Int          @unique @db.Integer @map("rank") // Rank for ordering cuisines
 
 @@map("cuisines")
 }
