@@ -307,7 +307,8 @@ const updateRestaurant = async (req, res) => {
       hours,
       address,
       banners,
-      applicableTaxBracket
+      applicableTaxBracket,
+      areaId
     } = req.body;
 
     // Ensure the authenticated user owns the restaurant
@@ -337,6 +338,17 @@ const updateRestaurant = async (req, res) => {
       }
     }
 
+    // Validate areaId if it's being updated
+    if (areaId && areaId !== restaurant.areaId) {
+      const area = await prisma.areaTable.findUnique({
+        where: { id: areaId }
+      });
+
+      if (!area) {
+        return errorResponse(res, 'Invalid area ID', 400);
+      }
+    }
+
     // Preserve open/close times in hours JSON without removing them
     let updatedHours = restaurant.hours;
     if (hours) {
@@ -354,7 +366,11 @@ const updateRestaurant = async (req, res) => {
         hours: updatedHours,
         address: address ? JSON.parse(JSON.stringify(address)) : restaurant.address,
         banners: banners || restaurant.banners,
-        applicableTaxBracket: applicableTaxBracket ? parseFloat(applicableTaxBracket) : restaurant.applicableTaxBracket
+        applicableTaxBracket: applicableTaxBracket ? parseFloat(applicableTaxBracket) : restaurant.applicableTaxBracket,
+        areaId: areaId || restaurant.areaId
+      },
+      include: {
+        area: true
       }
     });
 
