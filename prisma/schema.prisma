@@ -44,7 +44,6 @@ model Restaurant {
   orders               Order[]
   area                 AreaTable     @relation(fields: [areaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   isOpen               Boolean       @default(false) @map("r_is_open")
-  rank                 Int?          @default(3) @map("rank")
   expoPushToken        String?       @map("r_expoPushToken") @db.Text
 
   @@map("restaurants")
