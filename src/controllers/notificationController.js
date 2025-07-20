@@ -190,10 +190,63 @@ const sendNotificationToRestaurant = async (req, res) => {
   }
 };
 
+// Store FCM token for web push notifications for a customer
+const storeCustomerFCMToken = async (req, res) => {
+  try {
+    const { customerId, fcmToken } = req.body;
+    if (!customerId || !fcmToken) {
+      return res.status(400).json({ success: false, message: 'customerId and fcmToken are required' });
+    }
+    await prisma.customer.update({
+      where: { id: customerId },
+      data: { fcmToken }
+    });
+    return res.status(200).json({ success: true, message: 'FCM token stored successfully for customer' });
+  } catch (error) {
+    console.error('[NotificationController] - Error storing customer FCM token:', error);
+    return res.status(500).json({ success: false, message: 'Failed to store customer FCM token', error: error.message });
+  }
+};
+
+// Store both Expo and FCM tokens for a customer (universal endpoint)
+const storeCustomerPushTokens = async (req, res) => {
+  try {
+    const { customerId, expoPushToken, fcmToken } = req.body;
+    
+    if (!customerId) {
+      return res.status(400).json({ success: false, message: 'customerId is required' });
+    }
+    
+    if (!expoPushToken && !fcmToken) {
+      return res.status(400).json({ success: false, message: 'At least one token (expoPushToken or fcmToken) is required' });
+    }
+
+    const updateData = {};
+    if (expoPushToken) updateData.expoPushToken = expoPushToken;
+    if (fcmToken) updateData.fcmToken = fcmToken;
+
+    await prisma.customer.update({
+      where: { id: customerId },
+      data: updateData
+    });
+
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Push tokens stored successfully for customer',
+      stored: Object.keys(updateData)
+    });
+  } catch (error) {
+    console.error('[NotificationController] - Error storing customer push tokens:', error);
+    return res.status(500).json({ success: false, message: 'Failed to store customer push tokens', error: error.message });
+  }
+};
+
 module.exports = {
   storeExpoPushToken,
   sendNotificationToApp,
   storeCustomerExpoPushToken,
+  storeCustomerFCMToken,
+  storeCustomerPushTokens,
   sendNotificationToCustomer,
   sendNotificationToAllCustomers,
   storeRestaurantExpoPushToken,

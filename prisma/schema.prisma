@@ -109,6 +109,7 @@ model Customer {
   id        String    @id @default(dbgenerated("gen_random_uuid()")) @map("c_id") @db.Uuid
 
   expoPushToken String? @map("c_expoPushToken") @db.Text
+  fcmToken      String? @map("c_fcmToken") @db.Text
 
   reviews   OrderReview[]
   orders    Order[]
