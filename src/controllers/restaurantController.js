@@ -135,7 +135,9 @@ const createRestaurant = async (req, res) => {
       serving_radius,
       areaId,
       address,
-      applicableTaxBracket
+      applicableTaxBracket,
+      latitude,
+      longitude
     } = req.body;
 
     // Check if restaurant already exists
@@ -184,6 +186,15 @@ const createRestaurant = async (req, res) => {
       }
     }
 
+    // Prepare address with coordinates
+    let addressWithCoords = address ? JSON.parse(JSON.stringify(address)) : {};
+    
+    // Add coordinates to address if provided
+    if (latitude && longitude) {
+      addressWithCoords.latitude = parseFloat(latitude);
+      addressWithCoords.longitude = parseFloat(longitude);
+    }
+
     // Create restaurant
     const restaurant = await prisma.restaurant.create({
       data: {
@@ -194,7 +205,7 @@ const createRestaurant = async (req, res) => {
         cuisines,
         vegNonveg,
         hours: hours ? JSON.parse(JSON.stringify(hours)) : {},
-        address: address ? JSON.parse(JSON.stringify(address)) : {},
+        address: addressWithCoords,
         banners,
         applicableTaxBracket: applicableTaxBracket ? parseFloat(applicableTaxBracket) : null,
         areaId,
@@ -308,7 +319,9 @@ const updateRestaurant = async (req, res) => {
       address,
       banners,
       applicableTaxBracket,
-      areaId
+      areaId,
+      latitude,
+      longitude
     } = req.body;
 
     // Ensure the authenticated user owns the restaurant
@@ -355,6 +368,19 @@ const updateRestaurant = async (req, res) => {
       updatedHours = JSON.parse(JSON.stringify(hours));
     }
 
+    // Handle address with coordinates
+    let updatedAddress = restaurant.address;
+    if (address) {
+      updatedAddress = JSON.parse(JSON.stringify(address));
+    }
+    
+    // Add coordinates to address if provided
+    if (latitude && longitude) {
+      if (!updatedAddress) updatedAddress = {};
+      updatedAddress.latitude = parseFloat(latitude);
+      updatedAddress.longitude = parseFloat(longitude);
+    }
+
     const updatedRestaurant = await prisma.restaurant.update({
       where: { id },
       data: {
@@ -364,7 +390,7 @@ const updateRestaurant = async (req, res) => {
         cuisines: cuisines || restaurant.cuisines,
         vegNonveg: vegNonveg || restaurant.vegNonveg,
         hours: updatedHours,
-        address: address ? JSON.parse(JSON.stringify(address)) : restaurant.address,
+        address: updatedAddress,
         banners: banners || restaurant.banners,
         applicableTaxBracket: applicableTaxBracket ? parseFloat(applicableTaxBracket) : restaurant.applicableTaxBracket,
         areaId: areaId || restaurant.areaId
