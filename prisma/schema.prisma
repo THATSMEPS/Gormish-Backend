@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  output = "../generated/prisma"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -46,6 +46,7 @@ model Restaurant {
   isOpen               Boolean       @default(false) @map("r_is_open")
   rank                 Int?          @default(3) @map("rank")
   expoPushToken        String?       @map("r_expoPushToken") @db.Text
+
   @@map("restaurants")
 }
 
@@ -68,6 +69,7 @@ model MenuItem {
 
   @@map("menu_items")
 }
+
 model DeliveryPartner {
   mobile                String               @unique @map("dp_mobile") @db.VarChar
   name                  String               @map("dp_name") @db.VarChar
@@ -93,26 +95,26 @@ model DeliveryPartner {
 model Customer {
   // ✅ 'phone' is now optional (String?) and the @unique constraint is removed.
   // This means multiple Google sign-in users can have a NULL phone number.
-  phone     String?   @unique@map("c_phone") @db.VarChar(15) 
-  
-  email     String    @unique @map("c_email") @db.VarChar(50) // Email remains mandatory and unique
-  name      String    @map("c_name") @db.VarChar(50) // Name remains mandatory
+  phone String? @unique @map("c_phone") @db.VarChar(15)
 
-  createdAt DateTime  @default(now()) @map("c_created_at") @db.Timestamp(6)
-  
-  address   Json?     @map("c_address") @db.Json // Already optional (Json?)
-  
+  email String @unique @map("c_email") @db.VarChar(50) // Email remains mandatory and unique
+  name  String @map("c_name") @db.VarChar(50) // Name remains mandatory
+
+  createdAt DateTime @default(now()) @map("c_created_at") @db.Timestamp(6)
+
+  address Json? @map("c_address") @db.Json // Already optional (Json?)
+
   // ✅ 'areaId' is now optional (String?), and the relation field 'area' must also be optional (AreaTable?)
-  areaId    String?   @map("c_area_id") @db.Uuid 
-  area      AreaTable? @relation(fields: [areaId], references: [id], onDelete: NoAction, onUpdate: NoAction) 
+  areaId String?    @map("c_area_id") @db.Uuid
+  area   AreaTable? @relation(fields: [areaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  id        String    @id @default(dbgenerated("gen_random_uuid()")) @map("c_id") @db.Uuid
+  id String @id @default(dbgenerated("gen_random_uuid()")) @map("c_id") @db.Uuid
 
   expoPushToken String? @map("c_expoPushToken") @db.Text
   fcmToken      String? @map("c_fcmToken") @db.Text
 
-  reviews   OrderReview[]
-  orders    Order[]
+  reviews OrderReview[]
+  orders  Order[]
 
   @@map("customers")
 }
@@ -141,11 +143,9 @@ model Order {
   customer          Customer            @relation(fields: [customerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   deliveryPartner   DeliveryPartner?    @relation(fields: [deliveryPartnerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   restaurant        Restaurant          @relation(fields: [restaurantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-   
-           
+
   @@map("orders")
 }
-
 
 model OrderItem {
   quantity        Int      @default(1)
@@ -180,12 +180,12 @@ model OrderReview {
 }
 
 model Cuisine {
-  id              String      @id @default(dbgenerated("gen_random_uuid()")) @map("cuisine_id") @db.Uuid
-  cuisineName     String      @unique @map("cuisine_name")
-  imageUrl        String      @map("image_url")
-  rank           Int          @unique @db.Integer @map("rank") // Rank for ordering cuisines
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @map("cuisine_id") @db.Uuid
+  cuisineName String @unique @map("cuisine_name")
+  imageUrl    String @map("image_url")
+  rank        Int    @unique @map("rank") @db.Integer // Rank for ordering cuisines
 
-@@map("cuisines")
+  @@map("cuisines")
 }
 
 enum dp_gender_enum {

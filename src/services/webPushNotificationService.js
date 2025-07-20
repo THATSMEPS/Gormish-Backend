@@ -1,4 +1,4 @@
-const admin = require('firebase-admin');
+const admin = require("firebase-admin");
 
 // Initialize Firebase Admin if not already initialized
 let app;
@@ -7,13 +7,13 @@ try {
     const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
     app = admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
-      projectId: serviceAccount.project_id
+      projectId: serviceAccount.project_id,
     });
   } else {
     app = admin.app();
   }
 } catch (error) {
-  console.error('Error initializing Firebase Admin:', error);
+  console.error("Error initializing Firebase Admin:", error);
 }
 
 /**
@@ -25,10 +25,16 @@ try {
  * @param {Object} webPush - Web push specific options
  * @returns {Promise} - Firebase messaging response
  */
-async function sendWebPushNotification(fcmToken, title, body, data = {}, webPush = {}) {
+async function sendWebPushNotification(
+  fcmToken,
+  title,
+  body,
+  data = {},
+  webPush = {}
+) {
   try {
     if (!fcmToken) {
-      throw new Error('FCM token is required');
+      throw new Error("FCM token is required");
     }
 
     const message = {
@@ -43,35 +49,38 @@ async function sendWebPushNotification(fcmToken, title, body, data = {}, webPush
           acc[key] = String(data[key]);
           return acc;
         }, {}),
-        click_action: webPush.click_action || '/',
+        click_action: webPush.click_action || "/",
       },
       webpush: {
         headers: {
-          'TTL': '86400', // 24 hours
+          TTL: "86400", // 24 hours
         },
         notification: {
           title,
           body,
-          icon: webPush.icon || '/pwa.png',
-          badge: webPush.badge || '/pwa.png',
+          icon: webPush.icon || "/pwa.png",
+          badge: webPush.badge || "/pwa.png",
           image: webPush.image,
-          tag: webPush.tag || 'default',
+          tag: webPush.tag || "default",
           renotify: webPush.renotify || false,
           requireInteraction: webPush.requireInteraction || false,
           actions: webPush.actions || [],
           data: data,
         },
         fcm_options: {
-          link: webPush.click_action || '/',
+          link: webPush.click_action || "/",
         },
       },
     };
 
     const response = await admin.messaging().send(message);
-    console.log('[WebPushNotificationService] Successfully sent message:', response);
+    console.log(
+      "[WebPushNotificationService] Successfully sent message:",
+      response
+    );
     return response;
   } catch (error) {
-    console.error('[WebPushNotificationService] Error sending message:', error);
+    console.error("[WebPushNotificationService] Error sending message:", error);
     throw error;
   }
 }
@@ -85,10 +94,16 @@ async function sendWebPushNotification(fcmToken, title, body, data = {}, webPush
  * @param {Object} webPush - Web push specific options
  * @returns {Promise} - Array of results
  */
-async function sendMulticastWebPushNotification(tokens, title, body, data = {}, webPush = {}) {
+async function sendMulticastWebPushNotification(
+  tokens,
+  title,
+  body,
+  data = {},
+  webPush = {}
+) {
   try {
     if (!tokens || tokens.length === 0) {
-      throw new Error('At least one FCM token is required');
+      throw new Error("At least one FCM token is required");
     }
 
     const message = {
@@ -103,35 +118,41 @@ async function sendMulticastWebPushNotification(tokens, title, body, data = {}, 
           acc[key] = String(data[key]);
           return acc;
         }, {}),
-        click_action: webPush.click_action || '/',
+        click_action: webPush.click_action || "/",
       },
       webpush: {
         headers: {
-          'TTL': '86400', // 24 hours
+          TTL: "86400", // 24 hours
         },
         notification: {
           title,
           body,
-          icon: webPush.icon || '/pwa.png',
-          badge: webPush.badge || '/pwa.png',
+          icon: webPush.icon || "/pwa.png",
+          badge: webPush.badge || "/pwa.png",
           image: webPush.image,
-          tag: webPush.tag || 'default',
+          tag: webPush.tag || "default",
           renotify: webPush.renotify || false,
           requireInteraction: webPush.requireInteraction || false,
           actions: webPush.actions || [],
           data: data,
         },
         fcm_options: {
-          link: webPush.click_action || '/',
+          link: webPush.click_action || "/",
         },
       },
     };
 
     const response = await admin.messaging().sendEachForMulticast(message);
-    console.log('[WebPushNotificationService] Successfully sent multicast message:', response);
+    console.log(
+      "[WebPushNotificationService] Successfully sent multicast message:",
+      response
+    );
     return response;
   } catch (error) {
-    console.error('[WebPushNotificationService] Error sending multicast message:', error);
+    console.error(
+      "[WebPushNotificationService] Error sending multicast message:",
+      error
+    );
     throw error;
   }
 }
@@ -144,21 +165,24 @@ async function sendMulticastWebPushNotification(tokens, title, body, data = {}, 
 async function validateFCMToken(token) {
   try {
     if (!token) return false;
-    
+
     // Try to send a test message to validate the token
     const testMessage = {
       token: token,
       data: {
-        test: 'true'
+        test: "true",
       },
       // Use dry_run to validate without actually sending
-      dryRun: true
+      dryRun: true,
     };
-    
+
     await admin.messaging().send(testMessage);
     return true;
   } catch (error) {
-    console.error('[WebPushNotificationService] Invalid FCM token:', error.message);
+    console.error(
+      "[WebPushNotificationService] Invalid FCM token:",
+      error.message
+    );
     return false;
   }
 }
@@ -166,5 +190,5 @@ async function validateFCMToken(token) {
 module.exports = {
   sendWebPushNotification,
   sendMulticastWebPushNotification,
-  validateFCMToken
+  validateFCMToken,
 };

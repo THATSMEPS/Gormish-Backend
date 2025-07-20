@@ -1,5 +1,5 @@
-const { Expo } = require('expo-server-sdk');
-const { sendWebPushNotification } = require('./webPushNotificationService');
+const { Expo } = require("expo-server-sdk");
+const { sendWebPushNotification } = require("./webPushNotificationService");
 
 // Create a new Expo SDK client
 const expo = new Expo();
@@ -14,16 +14,18 @@ const expo = new Expo();
  */
 async function sendExpoPushNotification(expoPushToken, title, body, data = {}) {
   if (!Expo.isExpoPushToken(expoPushToken)) {
-    throw new Error('Invalid Expo push token');
+    throw new Error("Invalid Expo push token");
   }
 
-  const messages = [{
-    to: expoPushToken,
-    sound: 'default',
-    title,
-    body,
-    data,
-  }];
+  const messages = [
+    {
+      to: expoPushToken,
+      sound: "default",
+      title,
+      body,
+      data,
+    },
+  ];
 
   let ticketChunk = await expo.sendPushNotificationsAsync(messages);
   return ticketChunk;
@@ -39,32 +41,60 @@ async function sendExpoPushNotification(expoPushToken, title, body, data = {}) {
  * @param {Object} webPushOptions - Web push specific options
  * @returns {Promise} - Combined results
  */
-async function sendUniversalPushNotification(expoPushToken, fcmToken, title, body, data = {}, webPushOptions = {}) {
+async function sendUniversalPushNotification(
+  expoPushToken,
+  fcmToken,
+  title,
+  body,
+  data = {},
+  webPushOptions = {}
+) {
   const results = {
     expo: null,
     web: null,
-    errors: []
+    errors: [],
   };
 
   // Send to mobile (Expo) if token exists
   if (expoPushToken && Expo.isExpoPushToken(expoPushToken)) {
     try {
-      results.expo = await sendExpoPushNotification(expoPushToken, title, body, data);
-      console.log('[PushNotificationService] Expo notification sent successfully');
+      results.expo = await sendExpoPushNotification(
+        expoPushToken,
+        title,
+        body,
+        data
+      );
+      console.log(
+        "[PushNotificationService] Expo notification sent successfully"
+      );
     } catch (error) {
-      console.error('[PushNotificationService] Error sending Expo notification:', error);
-      results.errors.push({ platform: 'expo', error: error.message });
+      console.error(
+        "[PushNotificationService] Error sending Expo notification:",
+        error
+      );
+      results.errors.push({ platform: "expo", error: error.message });
     }
   }
 
   // Send to web (FCM) if token exists
   if (fcmToken) {
     try {
-      results.web = await sendWebPushNotification(fcmToken, title, body, data, webPushOptions);
-      console.log('[PushNotificationService] Web push notification sent successfully');
+      results.web = await sendWebPushNotification(
+        fcmToken,
+        title,
+        body,
+        data,
+        webPushOptions
+      );
+      console.log(
+        "[PushNotificationService] Web push notification sent successfully"
+      );
     } catch (error) {
-      console.error('[PushNotificationService] Error sending web push notification:', error);
-      results.errors.push({ platform: 'web', error: error.message });
+      console.error(
+        "[PushNotificationService] Error sending web push notification:",
+        error
+      );
+      results.errors.push({ platform: "web", error: error.message });
     }
   }
 
@@ -76,9 +106,9 @@ async function sendPushNotification(expoPushToken, title, body, data = {}) {
   return sendExpoPushNotification(expoPushToken, title, body, data);
 }
 
-module.exports = { 
+module.exports = {
   sendPushNotification, // Backward compatibility
   sendExpoPushNotification,
   sendWebPushNotification,
-  sendUniversalPushNotification
+  sendUniversalPushNotification,
 };
