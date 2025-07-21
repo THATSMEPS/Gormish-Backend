@@ -1,3 +1,4 @@
+
 # Gormish Backend
 
 ## Project Overview
@@ -21,36 +22,50 @@ Gormish Backend is a Node.js backend service built with Express.js, Prisma ORM, 
 - npm (Node Package Manager)
 
 ### Setup
-1. Clone the repository:
+1. **Clone the repository:**
    ```bash
    git clone <repository-url>
-   cd gormish-backend
+   cd Gormish-Backend
    ```
 
-2. Install dependencies:
+2. **Install dependencies:**
    ```bash
    npm install
    ```
 
-3. Set up environment variables:
-   Create a `.env` file in the root directory and configure the following variables:
+3. **Set up environment variables:**
+   Create a `.env` file in the root directory. Include the following variables (adjust values as needed):
    ```
    PORT=3000
+   NODE_ENV=development
    DATABASE_URL=postgresql://user:password@host:port/database
-   # Add other environment variables as needed (e.g., Supabase keys, JWT secrets)
+   SUPABASE_URL=your_supabase_url
+   SUPABASE_KEY=your_supabase_key
+   CORS_ORIGIN=*
+   JWT_SECRET=your_jwt_secret
+   JWT_EXPIRES_IN=1d
+   JWT_REFRESH_EXPIRES_IN=7d
+   SMTP_HOST=smtp.example.com
+   SMTP_PORT=587
+   SMTP_SECURE=false
+   SMTP_USER=your_smtp_user
+   SMTP_PASS=your_smtp_password
+   SMTP_FROM=your_email@example.com
+   FRONTEND_BASE_URL=http://localhost:3000
    ```
+   **Note:** Do not commit your `.env` file to version control. Each user should create their own `.env` with their credentials and secrets.
 
-4. Generate Prisma client:
+4. **Generate Prisma client:**
    ```bash
    npm run prisma:generate
    ```
 
-5. Run database migrations:
+5. **Run database migrations:**
    ```bash
    npm run prisma:migrate
    ```
 
-6. Start the development server:
+6. **Start the development server:**
    ```bash
    npm run dev
    ```
@@ -124,11 +139,11 @@ Enums are used for gender, order status, payment types, and delivery partner sta
   schema.prisma          # Prisma schema and database models
 /src
   /config               # Configuration files (environment, prisma, supabase)
-/controllers            # Business logic for API endpoints
-/middleware             # Middleware for auth, validation, error handling
-/routes                 # Express route definitions
-/services               # Service utilities (e.g., error handling)
-/utils                  # Utility functions
+  /controllers          # Business logic for API endpoints
+  /middleware           # Middleware for auth, validation, error handling
+  /routes               # Express route definitions
+  /services             # Service utilities (e.g., error handling)
+  /utils                # Utility functions
 app.js                  # Main Express app setup and server start
 package.json            # Project metadata and dependencies
 README.md               # Project documentation
@@ -136,6 +151,13 @@ README.md               # Project documentation
 
 ## Running Tests
 Test files like `test-db.js` and `test-dummy-orders.js` are included for testing database and dummy data. Run them with Node.js as needed.
+
+## What to Include When Copying the Project
+- All source code files (`src/`, `prisma/`, etc.)
+- `package.json` and `package-lock.json`
+- `README.md`
+- **Do NOT include your `.env` file.** Each user should create their own `.env` with their credentials and secrets.
+- Do not include generated files or node_modules (these can be installed via `npm install`).
 
 ## License
 This project is licensed under the ISC License.
