@@ -36,6 +36,14 @@ router.patch(
   "/restaurants/storeToken",
   notificationController.storeRestaurantExpoPushToken
 );
+router.patch(
+  "/restaurants/storeFCMToken",
+  notificationController.storeRestaurantFCMToken
+);
+router.patch(
+  "/restaurants/storePushTokens",
+  notificationController.storeRestaurantPushTokens
+);
 router.post(
   "/restaurants/sendNotification",
   notificationController.sendNotificationToRestaurant
