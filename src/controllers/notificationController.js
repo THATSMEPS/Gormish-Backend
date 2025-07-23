@@ -13,12 +13,10 @@ const storeExpoPushToken = async (req, res) => {
   try {
     const { dpId, expoPushToken } = req.body;
     if (!dpId || !expoPushToken) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "dpId and expoPushToken are required",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "dpId and expoPushToken are required",
+      });
     }
     await prisma.deliveryPartner.update({
       where: { id: dpId },
@@ -32,13 +30,11 @@ const storeExpoPushToken = async (req, res) => {
       "[NotificationController] - Error storing Expo push token:",
       error
     );
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Failed to store Expo push token",
-        error: error.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Failed to store Expo push token",
+      error: error.message,
+    });
   }
 };
 
@@ -83,35 +79,29 @@ const storeCustomerExpoPushToken = async (req, res) => {
   try {
     const { customerId, expoPushToken } = req.body;
     if (!customerId || !expoPushToken) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "customerId and expoPushToken are required",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "customerId and expoPushToken are required",
+      });
     }
     await prisma.customer.update({
       where: { id: customerId },
       data: { expoPushToken },
     });
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "Expo push token stored successfully for customer",
-      });
+    return res.status(200).json({
+      success: true,
+      message: "Expo push token stored successfully for customer",
+    });
   } catch (error) {
     console.error(
       "[NotificationController] - Error storing customer Expo push token:",
       error
     );
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Failed to store customer Expo push token",
-        error: error.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Failed to store customer Expo push token",
+      error: error.message,
+    });
   }
 };
 
@@ -216,35 +206,29 @@ const storeRestaurantExpoPushToken = async (req, res) => {
   try {
     const { restaurantId, expoPushToken } = req.body;
     if (!restaurantId || !expoPushToken) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "restaurantId and expoPushToken are required",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "restaurantId and expoPushToken are required",
+      });
     }
     await prisma.restaurant.update({
       where: { id: restaurantId },
       data: { expoPushToken },
     });
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "Expo push token stored successfully for restaurant",
-      });
+    return res.status(200).json({
+      success: true,
+      message: "Expo push token stored successfully for restaurant",
+    });
   } catch (error) {
     console.error(
       "[NotificationController] - Error storing restaurant Expo push token:",
       error
     );
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Failed to store restaurant Expo push token",
-        error: error.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Failed to store restaurant Expo push token",
+      error: error.message,
+    });
   }
 };
 
@@ -253,32 +237,96 @@ const sendNotificationToRestaurant = async (req, res) => {
   try {
     const { restaurantId, orderId } = req.body;
     if (!restaurantId || !orderId) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "restaurantId and orderId are required",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "restaurantId and orderId are required",
+      });
     }
     await sendNewOrderNotificationToRestaurant(restaurantId, orderId);
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "Notification sent to restaurant successfully",
-      });
+    return res.status(200).json({
+      success: true,
+      message: "Notification sent to restaurant successfully",
+    });
   } catch (error) {
     console.error(
       "[NotificationController] - Error sending notification to restaurant:",
       error
     );
-    return res
-      .status(500)
-      .json({
+    return res.status(500).json({
+      success: false,
+      message: "Failed to send notification to restaurant",
+      error: error.message,
+    });
+  }
+};
+
+// Store FCM token for web push notifications for a restaurant
+const storeRestaurantFCMToken = async (req, res) => {
+  try {
+    const { restaurantId, fcmToken } = req.body;
+    if (!restaurantId || !fcmToken) {
+      return res.status(400).json({
         success: false,
-        message: "Failed to send notification to restaurant",
-        error: error.message,
+        message: "restaurantId and fcmToken are required",
       });
+    }
+    await prisma.restaurant.update({
+      where: { id: restaurantId },
+      data: { fcmToken },
+    });
+    return res.status(200).json({
+      success: true,
+      message: "FCM token stored successfully for restaurant",
+    });
+  } catch (error) {
+    console.error(
+      "[NotificationController] - Error storing restaurant FCM token:",
+      error
+    );
+    return res.status(500).json({
+      success: false,
+      message: "Failed to store restaurant FCM token",
+      error: error.message,
+    });
+  }
+};
+
+// Store both Expo and FCM tokens for a restaurant (universal endpoint)
+const storeRestaurantPushTokens = async (req, res) => {
+  try {
+    const { restaurantId, expoPushToken, fcmToken } = req.body;
+    if (!restaurantId || (!expoPushToken && !fcmToken)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "restaurantId and at least one token (expoPushToken or fcmToken) are required",
+      });
+    }
+
+    const updateData = {};
+    if (expoPushToken) updateData.expoPushToken = expoPushToken;
+    if (fcmToken) updateData.fcmToken = fcmToken;
+
+    await prisma.restaurant.update({
+      where: { id: restaurantId },
+      data: updateData,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Push tokens stored successfully for restaurant",
+      tokens: { expoPushToken: !!expoPushToken, fcmToken: !!fcmToken },
+    });
+  } catch (error) {
+    console.error(
+      "[NotificationController] - Error storing restaurant push tokens:",
+      error
+    );
+    return res.status(500).json({
+      success: false,
+      message: "Failed to store restaurant push tokens",
+      error: error.message,
+    });
   }
 };
 
@@ -287,35 +335,29 @@ const storeCustomerFCMToken = async (req, res) => {
   try {
     const { customerId, fcmToken } = req.body;
     if (!customerId || !fcmToken) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "customerId and fcmToken are required",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "customerId and fcmToken are required",
+      });
     }
     await prisma.customer.update({
       where: { id: customerId },
       data: { fcmToken },
     });
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "FCM token stored successfully for customer",
-      });
+    return res.status(200).json({
+      success: true,
+      message: "FCM token stored successfully for customer",
+    });
   } catch (error) {
     console.error(
       "[NotificationController] - Error storing customer FCM token:",
       error
     );
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Failed to store customer FCM token",
-        error: error.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Failed to store customer FCM token",
+      error: error.message,
+    });
   }
 };
 
@@ -331,12 +373,10 @@ const storeCustomerPushTokens = async (req, res) => {
     }
 
     if (!expoPushToken && !fcmToken) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "At least one token (expoPushToken or fcmToken) is required",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "At least one token (expoPushToken or fcmToken) is required",
+      });
     }
 
     const updateData = {};
@@ -358,13 +398,11 @@ const storeCustomerPushTokens = async (req, res) => {
       "[NotificationController] - Error storing customer push tokens:",
       error
     );
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Failed to store customer push tokens",
-        error: error.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Failed to store customer push tokens",
+      error: error.message,
+    });
   }
 };
 
@@ -536,6 +574,8 @@ module.exports = {
   sendNotificationToCustomer,
   sendNotificationToAllCustomers,
   storeRestaurantExpoPushToken,
+  storeRestaurantFCMToken,
+  storeRestaurantPushTokens,
   sendNotificationToRestaurant,
   storeRestaurantFCMToken,
   removeRestaurantFCMToken,

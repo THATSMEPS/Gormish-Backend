@@ -40,6 +40,7 @@ router.patch(
   "/restaurants/storeFCMToken",
   notificationController.storeRestaurantFCMToken
 );
+
 router.delete(
   "/restaurants/removeFCMToken",
   notificationController.removeRestaurantFCMToken
@@ -47,6 +48,7 @@ router.delete(
 router.get(
   "/restaurants/:id/settings",
   notificationController.getRestaurantNotificationSettings
+  
 );
 router.post(
   "/restaurants/sendNotification",
