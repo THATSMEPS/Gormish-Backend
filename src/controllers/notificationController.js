@@ -577,7 +577,6 @@ module.exports = {
   storeRestaurantFCMToken,
   storeRestaurantPushTokens,
   sendNotificationToRestaurant,
-  storeRestaurantFCMToken,
   removeRestaurantFCMToken,
   getRestaurantNotificationSettings,
   sendTestNotificationToRestaurant,
