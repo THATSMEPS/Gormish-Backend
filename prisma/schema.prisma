@@ -23,30 +23,74 @@ model AreaTable {
 }
 
 model Restaurant {
-  name                 String        @map("r_name") @db.VarChar
-  createdAt            DateTime      @default(now()) @map("created_at") @db.Timestamp(6)
-  mobile               String        @unique @map("r_mobile") @db.VarChar
-  email                String        @unique @map("r_email") @db.VarChar
-  password             String        @map("r_password") @db.VarChar
-  approval             Boolean       @default(false) @map("r_approval")
-  cuisines             String        @map("r_cuisines") @db.VarChar
-  vegNonveg            String        @map("r_veg_nonveg") @db.VarChar
-  applicableTaxBracket Decimal?      @map("r_applicable_tax_bracket") @db.Decimal(10, 2)
-  trusted              Boolean       @default(true) @map("r_trusted")
-  hours                Json          @map("r_hours") @db.Json
-  address              Json          @map("r_address") @db.Json
-  serving_radius       Int           @map("r_serving_radius") @db.Integer
-  banners              String[]      @map("r_banners")
-  areaId               String        @map("r_area_id") @db.Uuid
-  id                   String        @id @default(dbgenerated("gen_random_uuid()")) @map("r_id") @db.Uuid
+  name                 String               @map("r_name") @db.VarChar
+  createdAt            DateTime             @default(now()) @map("created_at") @db.Timestamp(6)
+  mobile               String               @unique @map("r_mobile") @db.VarChar
+  email                String               @unique @map("r_email") @db.VarChar
+  password             String               @map("r_password") @db.VarChar
+  approval             Boolean              @default(false) @map("r_approval")
+  cuisines             String               @map("r_cuisines") @db.VarChar
+  vegNonveg            String               @map("r_veg_nonveg") @db.VarChar
+  applicableTaxBracket Decimal?             @map("r_applicable_tax_bracket") @db.Decimal(10, 2)
+  trusted              Boolean              @default(true) @map("r_trusted")
+  hours                Json                 @map("r_hours") @db.Json
+  address              Json                 @map("r_address") @db.Json
+  serving_radius       Int                  @map("r_serving_radius") @db.Integer
+  banners              String[]             @map("r_banners")
+  areaId               String               @map("r_area_id") @db.Uuid
+  id                   String               @id @default(dbgenerated("gen_random_uuid()")) @map("r_id") @db.Uuid
   menuItems            MenuItem[]
   reviews              OrderReview[]
   orders               Order[]
-  area                 AreaTable     @relation(fields: [areaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  isOpen               Boolean       @default(false) @map("r_is_open")
-  expoPushToken        String?       @map("r_expoPushToken") @db.Text
+  area                 AreaTable            @relation(fields: [areaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  isOpen               Boolean              @default(false) @map("r_is_open")
+  expoPushToken        String?              @map("r_expoPushToken") @db.Text
+  fcmToken             String?              @map("r_fcmToken") @db.Text
+  fcmTokens            RestaurantFCMToken[]
+  notificationLogs     NotificationLog[]
 
   @@map("restaurants")
+}
+
+model RestaurantFCMToken {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @map("rft_id") @db.Uuid
+  restaurantId String   @map("r_id") @db.Uuid
+  fcmToken     String   @unique @map("rft_fcm_token") @db.Text
+  deviceType   String   @default("web") @map("rft_device_type") @db.VarChar(20)
+  isActive     Boolean  @default(true) @map("rft_is_active")
+  createdAt    DateTime @default(now()) @map("rft_created_at") @db.Timestamp(6)
+  updatedAt    DateTime @default(now()) @updatedAt @map("rft_updated_at") @db.Timestamp(6)
+  lastUsedAt   DateTime @default(now()) @map("rft_last_used_at") @db.Timestamp(6)
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([restaurantId, fcmToken])
+  @@index([restaurantId, isActive])
+  @@index([fcmToken])
+  @@map("restaurant_fcm_tokens")
+}
+
+model NotificationLog {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @map("nl_id") @db.Uuid
+  restaurantId     String?  @map("r_id") @db.Uuid
+  customerId       String?  @map("c_id") @db.Uuid
+  orderId          String?  @map("order_id") @db.Uuid
+  notificationType String   @map("nl_notification_type") @db.VarChar(50)
+  title            String?  @map("nl_title") @db.VarChar(255)
+  body             String?  @map("nl_body") @db.Text
+  data             Json?    @map("nl_data") @db.Json
+  fcmTokens        String[] @map("nl_fcm_tokens")
+  successCount     Int      @default(0) @map("nl_success_count")
+  failureCount     Int      @default(0) @map("nl_failure_count")
+  sentAt           DateTime @default(now()) @map("nl_sent_at") @db.Timestamp(6)
+
+  restaurant Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  customer   Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  order      Order?      @relation(fields: [orderId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+
+  @@index([restaurantId, sentAt])
+  @@index([orderId])
+  @@map("notification_logs")
 }
 
 model MenuItem {
@@ -112,8 +156,9 @@ model Customer {
   expoPushToken String? @map("c_expoPushToken") @db.Text
   fcmToken      String? @map("c_fcmToken") @db.Text
 
-  reviews OrderReview[]
-  orders  Order[]
+  reviews          OrderReview[]
+  orders           Order[]
+  notificationLogs NotificationLog[]
 
   @@map("customers")
 }
@@ -139,6 +184,7 @@ model Order {
   id                String              @id @default(dbgenerated("gen_random_uuid()")) @map("order_id") @db.Uuid
   items             OrderItem[]
   review            OrderReview[]
+  notificationLogs  NotificationLog[]
   customer          Customer            @relation(fields: [customerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   deliveryPartner   DeliveryPartner?    @relation(fields: [deliveryPartnerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   restaurant        Restaurant          @relation(fields: [restaurantId], references: [id], onDelete: NoAction, onUpdate: NoAction)

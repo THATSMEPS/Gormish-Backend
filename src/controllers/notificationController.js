@@ -5,6 +5,7 @@ const {
 } = require("../services/customerNotificationService");
 const {
   sendNewOrderNotificationToRestaurant,
+  restaurantNotificationService
 } = require("../services/restaurantNotificationService");
 
 // Store Expo push token for a delivery partner
@@ -367,6 +368,165 @@ const storeCustomerPushTokens = async (req, res) => {
   }
 };
 
+// Store FCM token for web push notifications for a restaurant
+const storeRestaurantFCMToken = async (req, res) => {
+  try {
+    const { restaurantId, fcmToken } = req.body;
+    if (!restaurantId || !fcmToken) {
+      return res.status(400).json({
+        success: false,
+        message: "restaurantId and fcmToken are required",
+      });
+    }
+
+    const result = await restaurantNotificationService.storeFCMToken(restaurantId, fcmToken);
+    
+    if (result.success) {
+      return res.status(200).json({
+        success: true,
+        message: "FCM token stored successfully for restaurant",
+      });
+    } else {
+      return res.status(500).json({
+        success: false,
+        message: result.message,
+        error: result.error
+      });
+    }
+  } catch (error) {
+    console.error(
+      "[NotificationController] - Error storing restaurant FCM token:",
+      error
+    );
+    return res.status(500).json({
+      success: false,
+      message: "Failed to store restaurant FCM token",
+      error: error.message,
+    });
+  }
+};
+
+// Remove FCM token for a restaurant
+const removeRestaurantFCMToken = async (req, res) => {
+  try {
+    const { restaurantId } = req.body;
+    if (!restaurantId) {
+      return res.status(400).json({
+        success: false,
+        message: "restaurantId is required",
+      });
+    }
+
+    const result = await restaurantNotificationService.removeFCMToken(restaurantId);
+    
+    if (result.success) {
+      return res.status(200).json({
+        success: true,
+        message: "FCM token removed successfully for restaurant",
+      });
+    } else {
+      return res.status(500).json({
+        success: false,
+        message: result.message,
+        error: result.error
+      });
+    }
+  } catch (error) {
+    console.error(
+      "[NotificationController] - Error removing restaurant FCM token:",
+      error
+    );
+    return res.status(500).json({
+      success: false,
+      message: "Failed to remove restaurant FCM token",
+      error: error.message,
+    });
+  }
+};
+
+// Get notification settings for a restaurant
+const getRestaurantNotificationSettings = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Restaurant ID is required",
+      });
+    }
+
+    const settings = await restaurantNotificationService.getNotificationSettings(id);
+    
+    if (settings.success) {
+      return res.status(200).json({
+        success: true,
+        data: settings.data,
+      });
+    } else {
+      return res.status(404).json({
+        success: false,
+        message: settings.message,
+      });
+    }
+  } catch (error) {
+    console.error(
+      "[NotificationController] - Error getting restaurant notification settings:",
+      error
+    );
+    return res.status(500).json({
+      success: false,
+      message: "Failed to get restaurant notification settings",
+      error: error.message,
+    });
+  }
+};
+
+// Send test notification to a restaurant
+const sendTestNotificationToRestaurant = async (req, res) => {
+  try {
+    const { restaurantId, title, body } = req.body;
+    if (!restaurantId) {
+      return res.status(400).json({
+        success: false,
+        message: "restaurantId is required",
+      });
+    }
+
+    const testTitle = title || "Test Notification";
+    const testBody = body || "This is a test notification from Gormish Restaurant Dashboard";
+
+    const result = await restaurantNotificationService.sendTestNotification(
+      restaurantId,
+      testTitle,
+      testBody
+    );
+    
+    if (result.success) {
+      return res.status(200).json({
+        success: true,
+        message: "Test notification sent successfully",
+        data: result.data
+      });
+    } else {
+      return res.status(500).json({
+        success: false,
+        message: result.message,
+        error: result.error
+      });
+    }
+  } catch (error) {
+    console.error(
+      "[NotificationController] - Error sending test notification:",
+      error
+    );
+    return res.status(500).json({
+      success: false,
+      message: "Failed to send test notification",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   storeExpoPushToken,
   sendNotificationToApp,
@@ -377,4 +537,8 @@ module.exports = {
   sendNotificationToAllCustomers,
   storeRestaurantExpoPushToken,
   sendNotificationToRestaurant,
+  storeRestaurantFCMToken,
+  removeRestaurantFCMToken,
+  getRestaurantNotificationSettings,
+  sendTestNotificationToRestaurant,
 };
