@@ -281,15 +281,22 @@ class RestaurantNotificationService {
    * @returns {Promise<Object>} Storage result
    */
   async storeFCMToken(restaurantId, fcmToken, deviceType = 'web') {
-    try {
-      console.log(`[RestaurantNotificationService] Storing FCM token for restaurant: ${restaurantId}`);
+    console.log('[RestaurantNotificationService] ========== STORING FCM TOKEN ==========');
+    console.log(`[RestaurantNotificationService] Starting FCM token storage for restaurant: ${restaurantId}`);
+    console.log(`[RestaurantNotificationService] Token (first 20 chars): ${fcmToken.substring(0, 20)}...`);
+    console.log(`[RestaurantNotificationService] Device type: ${deviceType}`);
 
+    try {
+      console.log('[RestaurantNotificationService] Updating restaurant record in database...');
+      
       // Update primary token in restaurant table
-      await prisma.restaurant.update({
+      const updateResult = await prisma.restaurant.update({
         where: { id: restaurantId },
         data: { fcmToken }
       });
 
+      console.log('[RestaurantNotificationService] Database update successful');
+      console.log('[RestaurantNotificationService] Updated restaurant ID:', updateResult.id);
       console.log(`[RestaurantNotificationService] FCM token stored successfully for restaurant: ${restaurantId}`);
       
       return {
@@ -299,6 +306,13 @@ class RestaurantNotificationService {
 
     } catch (error) {
       console.error('[RestaurantNotificationService] Error storing FCM token:', error);
+      console.error('[RestaurantNotificationService] Error details:', {
+        message: error.message,
+        code: error.code,
+        restaurantId,
+        tokenLength: fcmToken?.length
+      });
+      
       return {
         success: false,
         message: 'Failed to store FCM token',
