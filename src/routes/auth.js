@@ -60,11 +60,18 @@ router.post('/refresh-token',
   (req, res) => res.status(501).json({ message: 'Refresh token not implemented' })
 );
 
-// New route to verify Firebase ID token for phone auth
-router.post('/verify-firebase-token',
-  body('idToken').notEmpty(),
+// Routes for phone authentication with Twilio
+router.post('/send-phone-otp',
+  body('phone').notEmpty().withMessage('Phone number is required'),
   validate,
-  authController.verifyFirebaseToken
+  authController.sendPhoneOTP
+);
+
+router.post('/verify-phone-otp',
+  body('phone').notEmpty().withMessage('Phone number is required'),
+  body('otp').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits'),
+  validate,
+  authController.verifyPhoneOTP
 );
 
 module.exports = router;

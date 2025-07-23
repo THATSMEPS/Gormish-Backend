@@ -260,37 +260,6 @@ const sendNotificationToRestaurant = async (req, res) => {
   }
 };
 
-// Store FCM token for web push notifications for a restaurant
-const storeRestaurantFCMToken = async (req, res) => {
-  try {
-    const { restaurantId, fcmToken } = req.body;
-    if (!restaurantId || !fcmToken) {
-      return res.status(400).json({
-        success: false,
-        message: "restaurantId and fcmToken are required",
-      });
-    }
-    await prisma.restaurant.update({
-      where: { id: restaurantId },
-      data: { fcmToken },
-    });
-    return res.status(200).json({
-      success: true,
-      message: "FCM token stored successfully for restaurant",
-    });
-  } catch (error) {
-    console.error(
-      "[NotificationController] - Error storing restaurant FCM token:",
-      error
-    );
-    return res.status(500).json({
-      success: false,
-      message: "Failed to store restaurant FCM token",
-      error: error.message,
-    });
-  }
-};
-
 // Store both Expo and FCM tokens for a restaurant (universal endpoint)
 const storeRestaurantPushTokens = async (req, res) => {
   try {
