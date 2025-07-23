@@ -6,7 +6,7 @@ const { successResponse, errorResponse } = require('../utils/responseHandler');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const tokenStore = require('../utils/tokenStore');
-const admin = require('firebase-admin');
+const twilioSMSService = require('../services/twilioSMSService');
 const path = require('path');
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -14,26 +14,8 @@ const config = require('../config/environment');
 
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
-// Initialize Firebase Admin SDK
-let serviceAccount;
-
-if (process.env.FIREBASE_CREDENTIALS) {
-  try {
-    serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
-    if (serviceAccount.private_key) {
-      serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-    }
-  } catch (error) {
-    console.error('Invalid FIREBASE_CREDENTIALS environment variable:', error);
-    serviceAccount = require(path.join(__dirname, '../config/firebasecreds.json'));
-  }
-} else {
-  serviceAccount = require(path.join(__dirname, '../config/firebasecreds.json'));
-}
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+// In-memory store for phone OTPs (consider using Redis for production)
+const phoneOtpStore = new Map();
 
 const register = async (req, res) => {
   try {
@@ -346,31 +328,96 @@ const phoneExist = async (req, res) => {
   }
 };
 
-const verifyFirebaseToken = async (req, res) => {
+// Send OTP to phone number using Twilio
+const sendPhoneOTP = async (req, res) => {
   try {
-    const { idToken } = req.body;
-    if (!idToken) {
-      return errorResponse(res, 'Firebase ID token is required', 400);
-    }
-
-    // Verify Firebase ID token
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const phone = decodedToken.phone_number;
-
+    const { phone } = req.body;
+    
     if (!phone) {
-      return errorResponse(res, 'Phone number not found in token', 400);
+      return errorResponse(res, 'Phone number is required', 400);
     }
+
+    // Validate phone number format
+    if (!twilioSMSService.isValidPhoneNumber(phone)) {
+      return errorResponse(res, 'Invalid phone number format', 400);
+    }
+
+    // Format phone number
+    const formattedPhone = twilioSMSService.formatPhoneNumber(phone);
+
+    // Generate OTP
+    const otp = generateOtp();
+
+    // Store OTP with expiration (10 minutes)
+    phoneOtpStore.set(formattedPhone, { 
+      otp, 
+      expiresAt: Date.now() + 10 * 60 * 1000,
+      attempts: 0
+    });
+
+    // Send OTP via Twilio
+    await twilioSMSService.sendOTP(formattedPhone, otp);
+
+    return successResponse(res, { 
+      phone: formattedPhone 
+    }, 'OTP sent successfully to your phone');
+
+  } catch (error) {
+    console.error('Error sending phone OTP:', error);
+    return errorResponse(res, 'Failed to send OTP', 500, error);
+  }
+};
+
+// Verify phone OTP and authenticate user
+const verifyPhoneOTP = async (req, res) => {
+  try {
+    const { phone, otp } = req.body;
+    
+    if (!phone || !otp) {
+      return errorResponse(res, 'Phone number and OTP are required', 400);
+    }
+
+    // Format phone number
+    const formattedPhone = twilioSMSService.formatPhoneNumber(phone);
+
+    // Get stored OTP
+    const record = phoneOtpStore.get(formattedPhone);
+    if (!record) {
+      return errorResponse(res, 'OTP not found or expired', 400);
+    }
+
+    // Check expiration
+    if (record.expiresAt < Date.now()) {
+      phoneOtpStore.delete(formattedPhone);
+      return errorResponse(res, 'OTP expired', 400);
+    }
+
+    // Check attempt limit (max 3 attempts)
+    if (record.attempts >= 3) {
+      phoneOtpStore.delete(formattedPhone);
+      return errorResponse(res, 'Too many failed attempts. Please request a new OTP', 400);
+    }
+
+    // Verify OTP
+    if (record.otp !== otp) {
+      record.attempts += 1;
+      phoneOtpStore.set(formattedPhone, record);
+      return errorResponse(res, 'Invalid OTP', 400);
+    }
+
+    // OTP is valid, remove it
+    phoneOtpStore.delete(formattedPhone);
 
     // Check if user exists
     let user = await prisma.customer.findUnique({
-      where: { phone }
+      where: { phone: formattedPhone }
     });
 
     // If user does not exist, create new user with phone number only
     if (!user) {
       user = await prisma.customer.create({
         data: {
-          phone,
+          phone: formattedPhone,
           name: '', // Name can be updated later
           email: '', // Email can be updated later
         }
@@ -388,12 +435,13 @@ const verifyFirebaseToken = async (req, res) => {
       user,
       session: {
         authToken: accessToken,
-        expires_at: Math.floor(Date.now() / 1000) + 3600
+        expires_at: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60 // 7 days
       }
-    }, 'Firebase token verified and user authenticated');
+    }, 'Phone number verified and user authenticated');
+
   } catch (error) {
-    console.error('Error verifying Firebase ID token:', error);
-    return errorResponse(res, 'Invalid Firebase ID token', 401, error);
+    console.error('Error verifying phone OTP:', error);
+    return errorResponse(res, 'Error verifying OTP', 500, error);
   }
 };
 
@@ -409,6 +457,7 @@ module.exports = {
   verifyOtp,
   emailExist,
   phoneExist,
-  verifyFirebaseToken
+  sendPhoneOTP,
+  verifyPhoneOTP
 };
 
