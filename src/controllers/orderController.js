@@ -1,6 +1,6 @@
 const prisma = require('../config/prisma');
 const { successResponse, errorResponse } = require('../utils/responseHandler');
-const { sendNewOrderNotificationToRestaurant } = require('../services/restaurantNotificationService');
+const { sendNewOrderNotificationToRestaurant, restaurantNotificationService } = require('../services/restaurantNotificationService');
 
 const createOrder = async (req, res) => {
   try {

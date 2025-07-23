@@ -14,7 +14,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@prisma/client": "^6.8.2",
+    "@prisma/client": "^6.12.0",
     "@supabase/supabase-js": "^2.49.8",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
@@ -36,6 +36,6 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.10",
-    "prisma": "^6.8.2"
+    "prisma": "^6.12.0"
   }
 }
