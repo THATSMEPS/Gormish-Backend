@@ -408,23 +408,35 @@ const storeCustomerPushTokens = async (req, res) => {
 
 // Store FCM token for web push notifications for a restaurant
 const storeRestaurantFCMToken = async (req, res) => {
+  console.log('[NotificationController] ========== STORE RESTAURANT FCM TOKEN ==========');
+  console.log('[NotificationController] Received request to store restaurant FCM token');
+  console.log('[NotificationController] Request body:', req.body);
+  
   try {
     const { restaurantId, fcmToken } = req.body;
+    
+    console.log('[NotificationController] Extracted parameters:', { restaurantId, fcmToken: fcmToken ? `${fcmToken.substring(0, 20)}...` : null });
+    
     if (!restaurantId || !fcmToken) {
+      console.log('[NotificationController] Missing required parameters');
       return res.status(400).json({
         success: false,
         message: "restaurantId and fcmToken are required",
       });
     }
 
+    console.log('[NotificationController] Calling restaurantNotificationService.storeFCMToken');
     const result = await restaurantNotificationService.storeFCMToken(restaurantId, fcmToken);
+    console.log('[NotificationController] Service result:', result);
     
     if (result.success) {
+      console.log('[NotificationController] FCM token stored successfully');
       return res.status(200).json({
         success: true,
         message: "FCM token stored successfully for restaurant",
       });
     } else {
+      console.log('[NotificationController] FCM token storage failed:', result.message);
       return res.status(500).json({
         success: false,
         message: result.message,
@@ -432,10 +444,7 @@ const storeRestaurantFCMToken = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error(
-      "[NotificationController] - Error storing restaurant FCM token:",
-      error
-    );
+    console.error('[NotificationController] Error storing restaurant FCM token:', error);
     return res.status(500).json({
       success: false,
       message: "Failed to store restaurant FCM token",
