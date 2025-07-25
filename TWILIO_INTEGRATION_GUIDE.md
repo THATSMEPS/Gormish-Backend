@@ -12,7 +12,7 @@ This document describes the Twilio SMS OTP integration that replaces Firebase ph
 Add these to your `.env` file:
 
 ```env
-TWILIO_ACCOUNT_SID=ACccbb61439d008997e00841088cff3864
+TWILIO_ACCOUNT_SID
 TWILIO_AUTH_TOKEN=your_auth_token_here
 TWILIO_PHONE_NUMBER=your_twilio_phone_number_here
 ```
