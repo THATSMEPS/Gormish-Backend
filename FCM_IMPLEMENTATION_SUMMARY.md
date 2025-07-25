@@ -1,4 +1,4 @@
-# Firebase FCM Integration - Implementation Summary
+# Firebase FCM Integration - Implementation Summary 
 
 ## Overview
 Complete Firebase Cloud Messaging (FCM) integration has been implemented for the Gormish restaurant backend. This enables real-time push notifications to restaurant dashboards for new orders and other important events.
