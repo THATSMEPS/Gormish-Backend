@@ -4,7 +4,7 @@
 This document describes the Twilio SMS OTP integration that replaces Firebase phone authentication in the Gormish Backend application.
 
 ## Prerequisites
-1. Twilio Account SID: `ACccbb61439d008997e00841088cff3864` ✅
+1. Twilio Account SID: **REQUIRED** - Get from Twilio Console  ✅
 2. Twilio Auth Token: **REQUIRED** - Get from Twilio Console
 3. Twilio Phone Number: **REQUIRED** - Purchase from Twilio Console
 
